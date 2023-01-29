@@ -12,7 +12,7 @@ type VersionStatusUnion = typeof VersionStatusDictionary[keyof typeof VersionSta
 export class TauriCommandService {
 
     static async checkVersions() {
-        return await invoke<[VersionStatusUnion,VersionStatusUnion]>("greet", {})
+        return await invoke<[VersionStatusUnion, VersionStatusUnion, VersionStatusUnion]>("greet", {})
     }
 
 }

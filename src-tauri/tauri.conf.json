@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "gardens-desktop",
-    "version": "0.0.0"
+    "version": "0.0.1"
   },
   "tauri": {
     "allowlist": {
@@ -33,8 +33,8 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.dev",
-      "longDescription": "",
+      "identifier": "gardens",
+      "longDescription": "Provide log description",
       "macOS": {
         "entitlements": null,
         "exceptionDomain": "",
@@ -43,8 +43,8 @@
         "signingIdentity": null
       },
       "resources": [],
-      "shortDescription": "",
-      "targets": "all",
+      "shortDescription": "Proivde short decs",
+      "targets": "deb",
       "windows": {
         "certificateThumbprint": null,
         "digestAlgorithm": "sha256",
