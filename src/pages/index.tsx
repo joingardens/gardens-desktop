@@ -26,7 +26,7 @@ function App() {
               {`OS Status: ${versionInfoQuery.data[1]}`}
               </div>
               <div>
-              {`Root status: ${versionInfoQuery.data[2]}`}
+              {`Docker permissions status: ${versionInfoQuery.data[2]}`}
               </div>
           </div>
           }

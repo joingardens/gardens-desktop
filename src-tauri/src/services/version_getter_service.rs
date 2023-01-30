@@ -1,5 +1,4 @@
 use std::process::Command;
-use std::env;
 use crate::core::dictionaries::version_status_dictionary::VersionStatusDictionary;
     
     pub fn trim_whitespace_v2(s: &str) -> String {
