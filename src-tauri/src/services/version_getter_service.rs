@@ -1,5 +1,6 @@
 use std::process::Command;
-use crate::core::dictionaries::version_status_dictionary::VersionStatusDictionary;
+
+use crate::core::{dictionaries::version_status_dictionary::VersionStatusDictionary, errors::{base_error::BaseError}};
     
     pub fn trim_whitespace_v2(s: &str) -> String {
         // second attempt: only allocate a string
@@ -13,7 +14,7 @@ use crate::core::dictionaries::version_status_dictionary::VersionStatusDictionar
         result
     }
     pub trait VersionGetter {
-        fn version() -> String;
+        fn version() -> Result<String, BaseError>;
         fn version_status() -> VersionStatusDictionary;
     }
     
@@ -22,19 +23,28 @@ use crate::core::dictionaries::version_status_dictionary::VersionStatusDictionar
     pub struct LinuxVersionGetter ();
     
     impl VersionGetter for DockerVersionGetter {
-        fn version() -> String {
-            let output = Command::new("docker")
+        fn version() -> Result<String, BaseError> {
+            let command = "docker";
+            let output = Command::new(command)
             .arg("--version")
-            .output()
-            .expect("failed to execute process");
-            let string_output = String::from_utf8((output.stdout).to_vec()).unwrap();
-            let mut arr = string_output.split_whitespace();
-            String::from(arr.nth(2).unwrap())
+            .output();
+            let output_result = match output {
+                Ok(command) => command,
+                Err(error) => return Err(BaseError::error_executing_command(&error.to_string())),
+            };
+            let string_output = String::from_utf8((output_result.stdout).to_vec()).unwrap();
+            let version = String::from(string_output.split_whitespace().nth(2).unwrap());
+            return Ok(version);
         }
 
         fn version_status() -> VersionStatusDictionary {
-            let mut verison = DockerVersionGetter::version();
-            let main_version = verison.split(".").nth(0).unwrap().parse::<i32>().unwrap(); 
+            let verison = DockerVersionGetter::version();
+            let verison_unwrapped = match verison {
+                Ok(r) => r,
+                Err(_err) => return VersionStatusDictionary::RED
+            };
+            println!("{}", verison_unwrapped);
+            let main_version = verison_unwrapped.split(".").nth(0).unwrap().parse::<i32>().unwrap(); 
             if main_version > 16 {
                 return VersionStatusDictionary::GREEN;
             }
@@ -43,23 +53,31 @@ use crate::core::dictionaries::version_status_dictionary::VersionStatusDictionar
     }
 
     impl VersionGetter for LinuxVersionGetter {
-        fn version() -> String {
+        fn version() -> Result<String, BaseError> {
+            let command = "lsb_release";
             if !(cfg!(unix)) {
-                return String::from("NOT_LINUX 0.0.0");
+                return Ok(String::from("NOT_LINUX 0.0.0")) ;
             }
-            let output = Command::new("lsb_release")
+            let output = Command::new(command)
             .arg("-a")
-            .output()
-            .expect("failed to execute process");
-            let string_output = String::from_utf8((output.stdout).to_vec()).unwrap();
+            .output();
+            let output_unwrapped = match output {
+                Ok(r) => r,
+                Err(_err) => return Err(BaseError::error_executing_command(command))
+            };
+            let string_output = String::from_utf8((output_unwrapped.stdout).to_vec()).unwrap();
             print!("{}", string_output);
             let mut arr = string_output.split("\n");
-            let mut release_string = arr.nth(1).unwrap().split(":").nth(1).unwrap();
+            let release_string = arr.nth(1).unwrap().split(":").nth(1).unwrap();
             let result = trim_whitespace_v2(release_string);
-            result
+            return Ok(result);
         }
         fn version_status() -> VersionStatusDictionary {
-            let verison = LinuxVersionGetter::version();
+            let verison_either = LinuxVersionGetter::version();
+            let verison = match verison_either {
+                Ok(r) => r,
+                Err(err) => return VersionStatusDictionary::RED
+            };
             let mut tuple = verison.split_whitespace();
             let distribution = tuple.nth(0).unwrap();
             let mut version_number = tuple.nth(0).unwrap();

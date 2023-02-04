@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { TauriCommandService } from "../services/tauri/command.service";
 
@@ -11,7 +11,18 @@ function App() {
     cacheTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
+    onSettled(data, error) {
+      console.log(data, error)
+    },
   })
+
+  const installMutation = useMutation({
+    mutationFn: () => TauriCommandService.BeginInstallation(),
+    onSettled(data, error, variables, context) {
+      console.log(data, error, variables, context)
+    },
+  })
+
 
   return (
     <div className="h-full bg-green-200 relative box-border">
@@ -33,7 +44,9 @@ function App() {
           {versionInfoQuery.isSuccess &&
             <button 
             className={`bg-blue-400 p-2 mt-6 cursor-pointer hover:bg-blue-500 transition-all rounded`} 
-            disabled={!versionInfoQuery.data.includes("RED")}>
+            disabled={versionInfoQuery.data.includes("RED")}
+            onClick={() => installMutation.mutate()}
+            >
               Install Gardens
             </button>
           }

@@ -6,6 +6,7 @@ mod services;
 mod core;
 use services::root_status_getter_service::get_docker_permission_status;
 use services::version_getter_service::LinuxVersionGetter;
+use tauri::Runtime;
 
 use crate::services::version_getter_service::DockerVersionGetter;
 use crate::services::version_getter_service::VersionGetter;
@@ -22,9 +23,14 @@ fn greet() -> [String; 3] {
 
 }
 
+#[tauri::command]
+async fn begin_installation<R: Runtime>(app: tauri::AppHandle<R>, window: tauri::Window<R>) -> Result<String, String> {
+  return Err("no_ok".to_string())
+}
+
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![greet, begin_installation])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
